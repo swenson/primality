@@ -3,7 +3,7 @@ from math import ceil, log, exp, floor, factorial, sqrt
 
 # http://www.math.dartmouth.edu/~carlp/PDF/complexity12.pdf
 def is_prime(n):
-  if has_square(n):
+  if is_power(n):
     return False
 
   pairs, primes = find_pairs(n)
@@ -25,7 +25,7 @@ def is_prime(n):
       return False
   return True
 
-def has_square(n):
+def is_power(n):
   if n < 0: n = -n
   k = 2
   root = pow(n, 1.0 / k)
@@ -56,17 +56,18 @@ def compute_factorizations(upper):
     p += 1
   return factorizations, primes
 
-def is_squarefree(n):
-  return not has_square(n)
-
-def factors_for(num, factors):
+def factors_for_and_squarefree(num, factors):
   if num < 0:
     num = -num
   if num == 1:
     return True
   for f in factors:
+    i = 0
     while num % f == 0:
       num //= f
+      i += 1
+    if i > 1:
+      return False
     if num == 1:
       return True
   return num == 1
@@ -95,7 +96,7 @@ def find_pairs(n, D = None):
         qs.add(q)
         qmap[q] = r
   for d in xrange(D, 4 * D + 1):
-    if is_squarefree(d) and factors_for(d, qs):
+    if factors_for_and_squarefree(d, qs):
       break
   else:
     return find_pairs(n, 4 * D)
