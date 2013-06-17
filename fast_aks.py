@@ -100,6 +100,7 @@ def find_pairs(n, D = None):
       break
   else:
     return find_pairs(n, 4 * D)
+  print "d =", d
   return [(qmap[q], q) for q in factorizations[d]], primes
 
 def choose(n, k):
@@ -153,24 +154,88 @@ def find_sj(z, pairs, n):
     for i, qi in enumerate(q):
       p[i] = (p[i] + qi) % n
 
-  def mult(p, q):
-    pq = [0] * (len(p) + len(q))
-    qis = [i for i, qi in enumerate(q) if qi != 0]
+  def sub(p, q):
+    if len(q) > len(p):
+      p.extend([0] * (len(q) - len(p)))
+    for i, qi in enumerate(q):
+      p[i] = (p[i] - qi) % n
+
+  def add3(p, q):
+    r = p[:]
+    add(r, q)
+    return r
+
+  def school_mult(p, q, r):
+    pq = [0] * r
+    qis = [(i, qi) for i, qi in enumerate(q) if qi != 0]
     for i, pi in enumerate(p):
       if pi == 0: continue
-      for j in qis:
-        qj = q[j]
-        pq[i + j] += (pi * qj) % n
+      for j, qj in qis:
+        pq[(i + j) % r] += (pi * qj) % n
     return pq
 
-  def multiply(p, q, r):
-    #print "Multiplying %s x %s" % (str([len(x) for x in p]), str([len(x) for x in q]))
+  def mult(p, q, r):
+    if len(p) <= 16 or len(q) <= 16:
+      return school_mult(p, q, r)
+    # karatsuba in da house
+    x0 = p[:len(p)/2]
+    x1 = p[len(p)/2:]
+    y0 = q[:len(q)/2]
+    y1 = q[len(q)/2:]
+    z2 = mult(x1, y1, r)
+    z0 = mult(x0, y0, r)
+    z1 = mult(add3(x0, x1), add3(y0, y1), r)
+    sub(z1, z2)
+    sub(z1, z0)
+    z0.extend(z1)
+    z0.extend(z2)
+    return z0
+
+  def school_multiply(p, q, r):
     # lazy schoolbook multiplication
-    pq = [list() for i in xrange(max(r, len(p) + len(q)))]
+    pq = [list() for i in xrange(len(p) + len(q))]
+
     for i, pi in enumerate(p):
       for j, qj in enumerate(q):
-        add(pq[(i + j) % r], mult(pi, qj))
+        add(pq[i + j], mult(pi, qj, r))
     return pq
+
+  def bigadd(p, q):
+    if len(q) > len(p):
+      p.extend([list() for i in xrange(len(q) - len(p))])
+    for i, qi in enumerate(q):
+      add(p[i], q[i])
+
+  def bigsub(p, q):
+    if len(q) > len(p):
+      p.extend([list() for i in xrange(len(q) - len(p))])
+    for i, qi in enumerate(q):
+      sub(p[i], q[i])
+
+  def bigadd3(p, q):
+    r = p[:]
+    bigadd(r, q)
+    return r
+
+  def multiply(p, q, r):
+    print "Multiplying %d x %d" % (len(p), len(q))
+    if len(p) <= 1 or len(q) <= 1:
+      return school_multiply(p, q, r)
+
+    # karatsuba in da house
+    x0 = p[:len(p)/2]
+    x1 = p[len(p)/2:]
+    y0 = q[:len(q)/2]
+    y1 = q[len(q)/2:]
+    z2 = multiply(x1, y1, r)
+    z0 = multiply(x0, y0, r)
+    z1 = multiply(bigadd3(x0, x1), bigadd3(y0, y1), r)
+    bigsub(z1, z2)
+    bigsub(z1, z0)
+    z0.extend(z1)
+    z0.extend(z2)
+    return z0
+
 
   def multiply_down(polys, r):
     print "Mutiplying down %d" % len(polys)
@@ -201,6 +266,7 @@ def find_sj(z, pairs, n):
       for m in Sj:
         poly[m] = -1
       polys.append([[1], poly])
+    print Sj
     g = multiply_down(polys, r)
     print len(g)
     gs.append(g)
