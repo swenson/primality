@@ -1,5 +1,7 @@
 from random import randint
 from math import ceil, log, exp, floor, factorial, sqrt
+import cyclo
+import polyring
 
 # http://www.math.dartmouth.edu/~carlp/PDF/complexity12.pdf
 def is_prime(n):
@@ -146,112 +148,25 @@ def primitive_root(r):
     else:
       return m
 
+def multiply_down(polys):
+  print "Mutiplying down %d" % len(polys)
+  if len(polys) == 1:
+    return polys[0]
+  if len(polys) == 2:
+    return polys[0] * polys[1]
+  mid = len(polys) / 2
+  return multiply_down(polys[0:mid]) * multiply_down(polys[mid:])
+
 def find_sj(z, pairs, n):
-
-  def add(p, q):
-    if len(q) > len(p):
-      p.extend([0] * (len(q) - len(p)))
-    for i, qi in enumerate(q):
-      p[i] = (p[i] + qi) % n
-
-  def sub(p, q):
-    if len(q) > len(p):
-      p.extend([0] * (len(q) - len(p)))
-    for i, qi in enumerate(q):
-      p[i] = (p[i] - qi) % n
-
-  def add3(p, q):
-    r = p[:]
-    add(r, q)
-    return r
-
-  def school_mult(p, q, r):
-    pq = [0] * r
-    qis = [(i, qi) for i, qi in enumerate(q) if qi != 0]
-    for i, pi in enumerate(p):
-      if pi == 0: continue
-      for j, qj in qis:
-        pq[(i + j) % r] += (pi * qj) % n
-    return pq
-
-  def mult(p, q, r):
-    if len(p) <= 16 or len(q) <= 16:
-      return school_mult(p, q, r)
-    # karatsuba in da house
-    x0 = p[:len(p)/2]
-    x1 = p[len(p)/2:]
-    y0 = q[:len(q)/2]
-    y1 = q[len(q)/2:]
-    z2 = mult(x1, y1, r)
-    z0 = mult(x0, y0, r)
-    z1 = mult(add3(x0, x1), add3(y0, y1), r)
-    sub(z1, z2)
-    sub(z1, z0)
-    z0.extend(z1)
-    z0.extend(z2)
-    return z0
-
-  def school_multiply(p, q, r):
-    # lazy schoolbook multiplication
-    pq = [list() for i in xrange(len(p) + len(q))]
-
-    for i, pi in enumerate(p):
-      for j, qj in enumerate(q):
-        add(pq[i + j], mult(pi, qj, r))
-    return pq
-
-  def bigadd(p, q):
-    if len(q) > len(p):
-      p.extend([list() for i in xrange(len(q) - len(p))])
-    for i, qi in enumerate(q):
-      add(p[i], q[i])
-
-  def bigsub(p, q):
-    if len(q) > len(p):
-      p.extend([list() for i in xrange(len(q) - len(p))])
-    for i, qi in enumerate(q):
-      sub(p[i], q[i])
-
-  def bigadd3(p, q):
-    r = p[:]
-    bigadd(r, q)
-    return r
-
-  def multiply(p, q, r):
-    print "Multiplying %d x %d" % (len(p), len(q))
-    if len(p) <= 1 or len(q) <= 1:
-      return school_multiply(p, q, r)
-
-    # karatsuba in da house
-    x0 = p[:len(p)/2]
-    x1 = p[len(p)/2:]
-    y0 = q[:len(q)/2]
-    y1 = q[len(q)/2:]
-    z2 = multiply(x1, y1, r)
-    z0 = multiply(x0, y0, r)
-    z1 = multiply(bigadd3(x0, x1), bigadd3(y0, y1), r)
-    bigsub(z1, z2)
-    bigsub(z1, z0)
-    z0.extend(z1)
-    z0.extend(z2)
-    return z0
-
-
-  def multiply_down(polys, r):
-    print "Mutiplying down %d" % len(polys)
-    if len(polys) == 1:
-      return polys[0]
-    if len(polys) == 2:
-      return multiply(polys[0], polys[1], r)
-    mid = len(polys) / 2
-    return multiply(multiply_down(polys[0:mid], r), multiply_down(polys[mid:], r), r)
-
   print z
   print pairs
 
   gs = []
 
   for r, q in pairs:
+    k = cyclo.CyclotomicField(r, n)
+    R = polyring.PolynomialRing(k)
+
     polys = []
     for j in xrange(q):
       Sj = set()
@@ -262,22 +177,14 @@ def find_sj(z, pairs, n):
       for l in xrange((r - 1) / q):
         zjlq += zq
         Sj.add(zjlq)
-      poly = [0] * (max(Sj) + 1)
+      val = k()
       for m in Sj:
-        poly[m] = -1
-      polys.append([[1], poly])
+        val.value[m % r] = -1
+      polys.append(R([val, k([1])]))
     print Sj
-    g = multiply_down(polys, r)
-    print len(g)
+    g = multiply_down(polys)
+    print len(g.value)
     gs.append(g)
-
-
-
-
-
-
-
-
 
 
 
