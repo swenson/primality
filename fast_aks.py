@@ -85,7 +85,7 @@ def find_pairs(n, D=None):
   qlower = exp(log(D) / (log(log(2 * D))**2))
   pairs = set()
   qs = set()
-  qmap = defaultdict(list)
+  qmap = {}
   for r in primes:
     if r >= D611: break
     for q in set(factorizations[r - 1]):
@@ -95,7 +95,8 @@ def find_pairs(n, D=None):
       if nr != 1:
         pairs.add((r, q))
         qs.add(q)
-        qmap[q].append(r)
+        if q not in qmap:
+          qmap[q] = r
   for d in xrange(D, 4 * D + 1):
     if factors_for_and_squarefree(d, qs):
       break
@@ -105,8 +106,8 @@ def find_pairs(n, D=None):
 
   pairs = []
   for q in factorizations[d]:
-    for r in qmap[q]:
-      pairs.append((r, q))
+    r = qmap[q]
+    pairs.append((r, q))
   return pairs, primes
 
 def choose(n, k):
