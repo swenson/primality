@@ -2,6 +2,7 @@ from random import randint
 from math import ceil, log, exp, floor, factorial, sqrt
 import cyclo
 import polyring
+from collections import defaultdict
 
 # http://www.math.dartmouth.edu/~carlp/PDF/complexity12.pdf
 def is_prime(n):
@@ -74,7 +75,7 @@ def factors_for_and_squarefree(num, factors):
       return True
   return num == 1
 
-def find_pairs(n, D = None):
+def find_pairs(n, D=None):
   if D is None:
     D = int(ceil(log(n, 2) ** 2))
 
@@ -84,26 +85,29 @@ def find_pairs(n, D = None):
   qlower = exp(log(D) / (log(log(2 * D))**2))
   pairs = set()
   qs = set()
-  qmap = {}
+  qmap = defaultdict(list)
   for r in primes:
     if r >= D611: break
-    for q in primes:
-      if (r - 1) % q != 0:
-        continue
+    for q in set(factorizations[r - 1]):
       if not (qlower < q < D311):
         continue
       nr = pow(n, (r - 1) / q, r)
       if nr != 1:
         pairs.add((r, q))
         qs.add(q)
-        qmap[q] = r
+        qmap[q].append(r)
   for d in xrange(D, 4 * D + 1):
     if factors_for_and_squarefree(d, qs):
       break
   else:
     return find_pairs(n, 4 * D)
   print "d =", d
-  return [(qmap[q], q) for q in factorizations[d]], primes
+
+  pairs = []
+  for q in factorizations[d]:
+    for r in qmap[q]:
+      pairs.append((r, q))
+  return pairs, primes
 
 def choose(n, k):
   return factorial(n) / (factorial(k) * factorial(n - k))
@@ -184,6 +188,7 @@ def find_sj(z, pairs, n):
     print Sj
     g = multiply_down(polys)
     print len(g.value)
+    print g.value
     gs.append(g)
 
 
