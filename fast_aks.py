@@ -190,6 +190,8 @@ def find_sj(z, pairs, n):
     g = multiply_down(polys)
     print len(g.value)
     print g.value
+    for x in g.value[0].value[1:]:
+      assert x == 0
     gs.append(g)
 
 
