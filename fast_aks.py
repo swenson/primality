@@ -184,7 +184,7 @@ def find_sj(z, pairs, n):
         Sj.add(zjlq)
       val = k()
       for m in Sj:
-        val.value[m % r] = -1
+        val.value[m % r] -= 1
       polys.append(R([val, k([1])]))
     print Sj
     g = multiply_down(polys)
