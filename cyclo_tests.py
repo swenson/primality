@@ -2,7 +2,6 @@ import unittest
 from cyclo import *
 
 
-
 class CycloTests(unittest.TestCase):
   def setUp(self):
     pass

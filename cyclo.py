@@ -20,8 +20,20 @@ class CyclotomicFieldElement(object):
 		else:
 			self.value = [0] * (self.n)
 
+	def copy(self):
+		return self.field(self.value[:])
+
 	def __eq__(self, other):
 		return self.field == other.field and self.value == other.value
+
+	def __sub__(self, other):
+		result = [0] * self.n
+		m = self.m
+		a = self.value
+		b = other.value
+		for i in xrange(self.n):
+			result[i] = (a[i] - b[i]) % m
+		return self.field(result)
 
 	def __add__(self, other):
 		result = [0] * self.n
@@ -30,7 +42,7 @@ class CyclotomicFieldElement(object):
 		b = other.value
 		for i in xrange(self.n):
 			result[i] = (a[i] + b[i]) % m
-		return result
+		return self.field(result)
 
 	def __mul__(self, other):
 		return self.field(mult(self.value, other.value, self.n, self.m))
