@@ -180,8 +180,9 @@ def find_sj(z, pairs, n):
       zjlq = zj
       Sj.add(zjlq)
       for l in xrange((r - 1) / q):
-        zjlq += zq
-        Sj.add(zjlq)
+        zjlq = (zjlq * zq) % r
+        #Sj.add(zjlq)
+        Sj.add(pow(z, j + l * q, r))
       val = k()
       for m in Sj:
         val.value[m % r] -= 1
