@@ -2,6 +2,9 @@
 
 Prime-testing code. Because primes are fun!
 
+Eventually we want to have a bunch of primality-testing algorithms,
+but this is a work in progress.
+
 * Miller-Rabin: Done.
 * Fast AKS: WIP.
 
