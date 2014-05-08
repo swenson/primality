@@ -1,13 +1,11 @@
-primality
-=========
+# primality
 
 Prime-testing code. Because primes are fun!
 
 * Miller-Rabin: Done.
 * Fast AKS: WIP.
 
-License
--------
+## License
 
 All code in this repository, unless otherwise specified, is hereby
 licensed under the MIT Public License:
