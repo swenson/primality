@@ -10,7 +10,7 @@ Prime-testing code. Because primes are fun!
 All code in this repository, unless otherwise specified, is hereby
 licensed under the MIT Public License:
 
-Copyright (c) 2013 Christopher Swenson.
+Copyright (c) 2013–2014 Christopher Swenson.
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
